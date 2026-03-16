@@ -17,7 +17,7 @@ const setCharacter = (
     return new Promise<GLTF | null>(async (resolve, reject) => {
       try {
         const encryptedBlob = await decryptFile(
-          "/models/character.enc?v=2",
+          "/models/character.enc?v=3",
           "MyCharacter12"
         );
         const blobUrl = URL.createObjectURL(new Blob([encryptedBlob]));
@@ -30,33 +30,20 @@ const setCharacter = (
             await renderer.compileAsync(character, camera, scene);
             character.traverse((child: any) => {
               if (child.isMesh) {
-                const mesh = child as THREE.Mesh;
-
-                // Change clothing colors to match site theme
-                if (mesh.material) {
-                  if (mesh.name === "BODY.SHIRT") { // The shirt mesh
-                    const newMat = (mesh.material as THREE.Material).clone() as THREE.MeshStandardMaterial;
-                    newMat.color = new THREE.Color("#8B4513");
-                    mesh.material = newMat;
-                  } else if (mesh.name === "Pant") {
-                    const newMat = (mesh.material as THREE.Material).clone() as THREE.MeshStandardMaterial;
-                    newMat.color = new THREE.Color("#000000");
-                    mesh.material = newMat;
-                  }
-                }
-
                 child.castShadow = true;
                 child.receiveShadow = true;
-                mesh.frustumCulled = true;
+                (child as THREE.Mesh).frustumCulled = true;
               }
             });
             resolve(gltf);
             setCharTimeline(character, camera);
             setAllTimeline();
-            character!.getObjectByName("footR")!.position.y = 3.36;
-            character!.getObjectByName("footL")!.position.y = 3.36;
 
-            // Monitor scale is handled by GsapScroll.ts animations
+            // Adjust foot positions for Avaturn model
+            const rightFoot = character.getObjectByName("RightFoot");
+            const leftFoot = character.getObjectByName("LeftFoot");
+            if (rightFoot) rightFoot.position.y = 3.36;
+            if (leftFoot) leftFoot.position.y = 3.36;
 
             dracoLoader.dispose();
           },
